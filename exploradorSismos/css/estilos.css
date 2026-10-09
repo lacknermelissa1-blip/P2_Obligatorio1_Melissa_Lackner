@@ -1,0 +1,538 @@
+/* =========================================================
+   EXPLORADOR DE SISMOS · diseño final (modo oscuro)
+   ========================================================= */
+
+/* ---------- Variables: toda la paleta en un solo lugar ---------- */
+:root {
+  --fondo: #1e2128;          /* gris oscuro de la página */
+  --encabezado: #16181d;     /* barra de arriba, un poco más oscura */
+  --panel: #262a33;          /* columna de resultados, un poco más clara */
+  --tarjeta: #30353f;        /* tarjetas, filas y selects */
+  --tarjeta-hover: #3a404b;
+  --borde: #444b58;
+
+  --texto: #f4f5f7;
+  --texto-suave: #a3abb8;
+
+  /* Colores de magnitud: brillantes para resaltar sobre el gris */
+  --menor: #10b981;
+  --moderado: #f59e0b;
+  --mayor: #f43f5e;
+  --tsunami: #38bdf8;
+
+  --oro: #e8b931;
+  --plata: #b8c0cc;
+  --bronce: #c7814e;
+
+  --radio: 14px;
+  --sombra: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 16px;
+  color: var(--texto);
+  background: var(--fondo);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Encabezado ---------- */
+.encabezado {
+  background: var(--encabezado);
+  padding: 22px 36px;
+  border-bottom: 3px solid var(--mayor);
+}
+
+.encabezado h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Dos columnas: mapa | panel ---------- */
+.contenido {
+  flex: 1;
+  display: flex;
+  min-height: 0;          /* scroll en el panel */
+}
+
+.zona-mapa {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 28px 36px 32px;
+}
+
+.panel {
+  width: 480px;
+  flex-shrink: 0;
+  background: var(--panel);
+  padding: 30px 30px;
+  overflow-y: auto;
+}
+
+/* ---------- Filtros ---------- */
+.filtros h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.filtros-fila {
+  /* Grilla: 4 columnas iguales para los selects + una para el botón */
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+select {
+  font: inherit;
+  font-size: 0.95rem;
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--tarjeta);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--texto-suave);
+}
+
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--tsunami);
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 30px;
+  background: var(--texto);     /* botón principal en blanco */
+  color: var(--fondo);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+button:hover {
+  background: white;
+  transform: translateY(-1px);
+}
+
+/* ---------- Mapa ---------- */
+.mapa-contenedor {
+  position: relative;     /* mensaje y leyenda encima */
+  flex: 1;
+  min-height: 380px;
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+
+#mapa {
+  width: 100%;
+  height: 100%;
+  background: #d9dde3;
+}
+
+/* Tooltip de Leaflet en oscuro, con la tipografía de la app */
+.leaflet-tooltip {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.85rem;
+  background: var(--fondo);
+  color: var(--texto);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.leaflet-tooltip-left::before  { border-left-color: var(--fondo); }
+.leaflet-tooltip-right::before { border-right-color: var(--fondo); }
+
+/* ---------- Mensaje centrado sobre el mapa ---------- */
+.mensaje {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;          /* arriba del mapa */
+  width: 400px;
+  max-width: 90%;
+  padding: 26px 30px;
+  background: var(--fondo);
+  border-radius: var(--radio);
+  text-align: center;
+  box-shadow: var(--sombra);
+}
+
+.mensaje-titulo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.mensaje-texto {
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+}
+
+.mensaje button {
+  margin-top: 18px;
+}
+
+.oculto {
+  display: none;
+}
+
+/* ---------- Leyenda ---------- */
+.leyenda {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  background: var(--fondo);
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 2;
+}
+
+.leyenda-titulo {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.punto {
+  display: inline-block;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.punto-menor    { width: 9px;  height: 9px;  background: var(--menor); }
+.punto-moderado { width: 13px; height: 13px; background: var(--moderado); }
+.punto-mayor    { width: 17px; height: 17px; background: var(--mayor); }
+.punto-tsunami  { width: 15px; height: 15px; border: 3px solid var(--tsunami); }
+
+/* ---------- Panel: título y resumen ---------- */
+.panel h2 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.resumen {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  color: var(--texto-suave);
+}
+
+.panel h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 30px 0 12px;
+}
+
+/* ---------- Panel vacío (inicio, cargando, 0 sismos, error) ---------- */
+.panel-vacio {
+  margin-top: 24px;
+  padding: 34px 24px;
+  border: 1.5px dashed var(--borde);
+  border-radius: var(--radio);
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+}
+
+.panel-vacio-titulo {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--texto);
+  margin-bottom: 6px;
+}
+
+/* ---------- Estadísticas ---------- */
+.estadisticas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tarjeta {
+  background: var(--tarjeta);
+  border-radius: var(--radio);
+  padding: 18px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tarjeta strong {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.tarjeta span {
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+}
+
+/* La cantidad de sismos es el dato principal: ocupa todo el ancho y es más grande */
+.tarjeta:nth-child(1) {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tarjeta:nth-child(1) strong {
+  font-size: 3.4rem;
+}
+
+.tarjeta:nth-child(1) span {
+  font-size: 1.1rem;
+}
+
+/* Magnitud máxima en rojo y tsunami en celeste (por su posición en la grilla) */
+.tarjeta:nth-child(2) strong { color: var(--mayor); }
+.tarjeta:nth-child(5) strong { color: var(--tsunami); }
+
+/* ---------- Listas (top 3 y todos los sismos) ---------- */
+.lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila {
+  background: var(--tarjeta);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+
+.fila:hover {
+  background: var(--tarjeta-hover);
+}
+
+.fila-lugar {
+  flex: 1;
+  min-width: 0;
+  /* Si el lugar es muy largo, se corta con "…" */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fila-dato {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.etiqueta {
+  color: var(--encabezado);
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 4px 0;
+  width: 44px;
+  text-align: center;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.etiqueta-menor    { background: var(--menor); }
+.etiqueta-moderado { background: var(--moderado); }
+.etiqueta-mayor    { background: var(--mayor); }
+
+/* Top 3: filas más grandes y medallas. Es la única lista <ol> del panel. */
+ol.lista .fila {
+  padding: 15px 14px;
+  font-size: 1.02rem;
+}
+
+ol.lista li:nth-child(1) .etiqueta { background: var(--oro); }
+ol.lista li:nth-child(2) .etiqueta { background: var(--plata); }
+ol.lista li:nth-child(3) .etiqueta { background: var(--bronce); }
+
+/* ---------- Pantallas medianas: selects con letra un poco más chica ---------- */
+@media (max-width: 1500px) {
+  select {
+    font-size: 0.85rem;
+    padding: 11px 8px;
+  }
+}
+
+/* ---------- Pantallas medianas: panel un poco más angosto ---------- */
+@media (max-width: 1250px) {
+  .panel {
+    width: 400px;
+  }
+}
+
+/* ---------- Pantallas chicas: el panel pasa abajo del mapa ---------- */
+@media (max-width: 900px) {
+  .contenido {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .encabezado {
+    padding: 18px;
+  }
+
+  .encabezado h1 {
+    font-size: 1.6rem;
+  }
+
+  .zona-mapa {
+    padding: 22px 18px;
+  }
+
+  .mapa-contenedor {
+    flex: none;
+    height: 440px;
+  }
+
+  .panel {
+    width: 100%;
+    overflow: visible;
+    padding: 26px 18px;
+  }
+
+  .filtros-fila {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #btnBuscar {
+    grid-column: span 2;
+  }
+}
+
+/* =========================================================
+   DETALLE DEL SISMO (clic en el panel o en el mapa)
+   ========================================================= */
+
+/* Las filas se pueden clickear */
+.fila {
+  cursor: pointer;
+}
+
+/* El clic siempre cae en la fila (la que tiene el data-id) */
+.fila * {
+  pointer-events: none;
+}
+
+/* Fila del sismo elegido */
+.fila.fila-activa {
+  background: var(--tarjeta-hover);
+  outline: 2px solid var(--texto);
+}
+
+/* Ventanita de Leaflet en modo oscuro */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--fondo);
+  color: var(--texto);
+  box-shadow: var(--sombra);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radio);
+}
+
+.leaflet-popup-content {
+  margin: 18px 20px;
+  font-family: "Poppins", sans-serif;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--texto-suave);
+  font-size: 22px;
+  top: 8px;
+  right: 8px;
+}
+
+.leaflet-popup-content p {
+  margin: 0;               /* saca el margen de Leaflet */
+}
+
+.detalle-magnitud {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.detalle-menor    { color: var(--menor); }
+.detalle-moderado { color: var(--moderado); }
+.detalle-mayor    { color: var(--mayor); }
+
+.detalle .detalle-lugar {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 6px 0 14px;
+  padding-right: 10px;
+}
+
+/* Lista de datos: nombre a la izquierda, valor a la derecha */
+.detalle dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  font-size: 0.88rem;
+}
+
+.detalle dt {
+  color: var(--texto-suave);
+}
+
+.detalle dd {
+  margin: 0;
+  text-align: right;
+}
+
+.leaflet-container .detalle a {
+  display: block;
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--texto);
+  color: var(--fondo);
+  text-align: center;
+  font-weight: 600;
+  text-decoration: none;
+}

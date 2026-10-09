@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorador de sismos</title>
+
+  <!-- Leaflet (CSS) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <!-- Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="encabezado">
+    <h1>Explorador de sismos</h1>
+  </header>
+
+  <main class="contenido">
+
+    <!-- FILTROS + MAPA -->
+    <section class="zona-mapa">
+
+      <div class="filtros">
+        <h2>Filtros</h2>
+        <div class="filtros-fila">
+          <label>
+            Período
+            <select id="selPeriodo">
+              <option value="">Seleccionar período</option>
+              <option value="hora">Última hora</option>
+              <option value="dia">Último día</option>
+              <option value="semana">Última semana</option>
+              <option value="mes">Último mes</option>
+            </select>
+          </label>
+
+          <label>
+            Magnitud mínima
+            <select id="selMagnitud">
+              <option value="">Seleccionar magnitud</option>
+              <option value="2.5">2.5 o más</option>
+              <option value="4.5">4.5 o más</option>
+              <option value="6">6 o más</option>
+            </select>
+          </label>
+
+          <label>
+            Zona
+            <select id="selZona">
+              <option value="">Seleccionar zona</option>
+              <option value="mundo">Todo el mundo</option>
+              <option value="sudamerica">América del Sur</option>
+              <option value="norteamerica">América del Norte y Central</option>
+              <option value="europa">Europa</option>
+              <option value="asia">Asia</option>
+              <option value="africa">África</option>
+              <option value="oceania">Oceanía</option>
+            </select>
+          </label>
+
+          <label>
+            Profundidad
+            <select id="selProfundidad">
+              <option value="">Seleccionar profundidad</option>
+              <option value="cualquiera">Cualquiera</option>
+              <option value="superficial">Superficial (0–70 km)</option>
+              <option value="intermedia">Intermedia (70–300 km)</option>
+              <option value="profunda">Profunda (más de 300 km)</option>
+            </select>
+          </label>
+
+          <button id="btnBuscar">Buscar</button>
+        </div>
+      </div>
+
+      <!-- Mapa (Leaflet) -->
+      <div class="mapa-contenedor">
+        <div id="mapa"></div>
+
+        <!-- Mensaje: inicio, cargando, sin resultados, error, avisos -->
+        <div id="mensaje" class="mensaje">
+          <p id="mensajeTitulo" class="mensaje-titulo"></p>
+          <p id="mensajeTexto" class="mensaje-texto"></p>
+          <button id="btnReintentar" class="oculto">Reintentar</button>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="leyenda">
+          <p class="leyenda-titulo">Cómo leer el mapa</p>
+          <p><span class="punto punto-menor"></span> Menor · menos de 5</p>
+          <p><span class="punto punto-moderado"></span> Moderado · 5 a 6.9</p>
+          <p><span class="punto punto-mayor"></span> Mayor · 7 o más</p>
+          <p><span class="punto punto-tsunami"></span> Alerta de tsunami</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL DE RESULTADOS -->
+    <aside class="panel">
+      <h2>Resultados</h2>
+      <p id="resumenFiltros" class="resumen">Sin filtros aplicados</p>
+      <div id="panelContenido">
+        <p class="panel-vacio">Acá vas a ver las estadísticas y la lista de sismos de tu búsqueda.</p>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Leaflet (JS), antes de main.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- module: import / export -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
